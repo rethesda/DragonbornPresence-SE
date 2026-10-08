@@ -1,4 +1,4 @@
-[center][img]https://i.imgur.com/e2etYi1.png[/img]
+[center][img]https://raw.githubusercontent.com/Fozar/DragonbornPresence-SE/master/docs/media/logo.png[/img]
 
 [font=Tahoma][size=5][b]DRAGONBORN PRESENCE[/b][/size]
 [size=3]DISCORD RICH PRESENCE SKSE PLUGIN[/size][/font][/center]
@@ -89,6 +89,13 @@ No .esp. No plugins to enable. Just drop and play.
 [*]SKSE64 matching your game version (SE 1.5.97, AE 1.6.x, or the 1.7.x update)
 [*][url=https://www.nexusmods.com/skyrimspecialedition/mods/32444]Address Library for SKSE Plugins[/url] — make sure it includes your game version (e.g. [font=Courier New]versionlib-1-7-104-0.bin[/font])
 [*]Discord Desktop — optional: if Discord isn't running, the game plays normally and the mod simply stays inactive
+[/list][/font]
+
+[font=Tahoma][size=4][b]— More mods by Fozar —[/b][/size][/font]
+
+[font=Tahoma][list]
+[*][url=https://www.nexusmods.com/skyrimspecialedition/mods/30810][b]Main Menu Design Replacer[/b][/url] — an old-school centred main menu on a translucent column, with smooth 60 fps animations.
+[*][url=https://www.nexusmods.com/skyrimspecialedition/mods/194163][b]Stealth Senses[/b][/url] — your footprints are evidence: suspicious enemies find your trail and follow it to where you hide.
 [/list][/font]
 
 [font=Tahoma][size=4][b]— Credits —[/b][/size][/font]
