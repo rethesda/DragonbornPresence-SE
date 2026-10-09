@@ -11,5 +11,6 @@
     "show_weather": true,
     "show_bounty": true,
     "show_death": true,
+    "show_survival": true,
     "show_images": true
 }

@@ -21,6 +21,7 @@
 [*][b]Movement[/b] — [i]Sneaking[/i], [i]Swimming[/i], or [i]Riding <horse name>[/i] when nothing more important is happening.
 [*][b]Bounty[/b] — if any hold wants your head, the details line shows [i]Wanted: <gold>[/i].
 [*][b]Death[/b] — dying shows [i]Dead[/i] until you reload. Sovngarde awaits.
+[*][b]Survival Mode[/b] — when it is on, the details line shows how badly you are freezing, starving or worn out: [i]Very Cold[/i], [i]Freezing[/i], [i]Numb[/i], [i]Hungry[/i], [i]Starving[/i], [i]Tired[/i], [i]Debilitated[/i]… The names come from the game itself, in your language.
 [*][b]Icons[/b] — the big picture shows where you are: the hold's emblem in its capital, the location type everywhere else (cave, Nordic ruin, Dwemer ruin, fort, camp, mine, dragon lair…), an inn, or Sovngarde, Blackreach, the Soul Cairn, Apocrypha, Solstheim. The emblems and location symbols are the game's own map markers. A small icon shows what you're doing — fighting, talking, smithing, reading, sneaking, riding and more.
 [*][b]Session timer[/b] — shows how long you've been playing this session.
 [*][b]Menu states[/b] — displays [i]Main menu[/i] while on the title screen and [i]Editing character[/i] during character creation.
@@ -74,6 +75,7 @@ No .esp. No plugins to enable. Just drop and play.
     "show_weather": true,
     "show_bounty": true,
     "show_death": true,
+    "show_survival": true,
     "show_images": true
 }[/font]
 

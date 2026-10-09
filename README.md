@@ -20,6 +20,7 @@ While you play, Discord shows your character's name, race, level, current locati
 - Movement — `Sneaking`, `Swimming`, or `Riding <horse name>` when nothing more important is happening
 - Bounty — `Wanted: <gold>` in the details line while any hold has a bounty on you
 - Death — shows `Dead` when you die
+- Survival Mode — `Freezing`, `Starving`, `Weary` and the other severe stages of cold, hunger and fatigue in the details line, in your game's language
 - Icons — the hold emblem or location type (cave, ruin, fort, camp…) as the big picture, the current activity as a small one; the emblems and location symbols are the game's own map markers
 - Session timer showing how long you've been playing
 - State-aware presence: Main Menu, Character Creation, Loading, and In-Game are all handled separately
@@ -64,6 +65,7 @@ Edit `Data\SKSE\Plugins\DragonbornPresenceConfig.json` to control what appears i
     "show_weather": true,
     "show_bounty": true,
     "show_death": true,
+    "show_survival": true,
     "show_images": true
 }
 ```
@@ -80,6 +82,7 @@ Edit `Data\SKSE\Plugins\DragonbornPresenceConfig.json` to control what appears i
 - `show_weather` — rain/snow marker next to the clock (exteriors only)
 - `show_bounty` — `Wanted: <gold>` in the details line when your total bounty is above zero
 - `show_death` — `Dead` when your character dies
+- `show_survival` — Survival Mode stages in the details line: cold (`Very Cold` and worse), hunger (`Hungry` and worse), fatigue (`Tired` and worse); nothing while Survival Mode is off
 - `show_images` — location/activity icons; off shows the plain Skyrim logo
 - `icon_url` (optional string) — base URL of a custom icon set: a folder with `<key>.png` files under the names used in [`assets/icons`](assets/icons)
 

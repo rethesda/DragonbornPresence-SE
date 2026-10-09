@@ -88,6 +88,7 @@ struct Config {
     bool show_weather     = true;   // rain/snow (exterior only)
     bool show_bounty      = true;   // total crime gold
     bool show_death       = true;
+    bool show_survival    = true;   // Survival Mode cold/hunger/exhaustion stages
     bool show_images      = true;   // location / activity icons
     std::string icon_url  = kIconBaseUrl;  // folder with <key>.png, for custom icon sets
 } g_config;
@@ -422,6 +423,45 @@ static int GetTotalBounty() {
     return total;
 }
 
+// Survival Mode (ccQDRSSE001, shipped with the game since AE): every need keeps one stage
+// ability Survival_<Need>Stage<N> on the player, named after the stage in the game's own
+// language ("Freezing", "Starving"). Only stages 3–5 are shown; milder ones are routine.
+constexpr std::string_view kSurvivalPlugin      = "ccQDRSSE001-SurvivalMode.esl";
+constexpr RE::FormID       kSurvivalModeEnabled = 0x826;  // GLOB Survival_ModeEnabled
+// Per need, worst stage first. Exhaustion stages also have a NoDisease variant.
+constexpr RE::FormID kSurvivalStageIDs[][6] = {
+    {0x871, 0x870, 0x86D},                       // cold: Numb, Freezing, Very Cold
+    {0x885, 0x886, 0x881},                       // hunger: Starving, Famished, Hungry
+    {0x87D, 0x90D, 0x87B, 0x90C, 0x87A, 0x90F},  // exhaustion: Debilitated, Weary, Tired
+};
+RE::TESGlobal*  g_survivalEnabled = nullptr;  // null when the plugin isn't loaded
+RE::SpellItem*  g_survivalStages[std::size(kSurvivalStageIDs)][6] = {};
+
+static void ResolveSurvivalForms() {
+    auto* dh = RE::TESDataHandler::GetSingleton();
+    if (!dh || !dh->LookupLoadedLightModByName(kSurvivalPlugin)) return;
+    g_survivalEnabled = dh->LookupForm<RE::TESGlobal>(kSurvivalModeEnabled, kSurvivalPlugin);
+    for (std::size_t need = 0; need < std::size(kSurvivalStageIDs); ++need)
+        for (std::size_t i = 0; i < 6; ++i)
+            if (auto id = kSurvivalStageIDs[need][i])
+                g_survivalStages[need][i] = dh->LookupForm<RE::SpellItem>(id, kSurvivalPlugin);
+    SKSE::log::info("Survival Mode plugin found (enabled global: {})", g_survivalEnabled != nullptr);
+}
+
+// "Freezing · Starving" — the severe stage of each need, in the game's language.
+static std::string BuildSurvival(RE::PlayerCharacter* player) {
+    if (!g_config.show_survival || !g_survivalEnabled || g_survivalEnabled->value == 0.0f)
+        return "";
+    std::string result;
+    for (auto& stages : g_survivalStages)
+        for (auto* spell : stages)
+            if (spell && player->HasSpell(spell)) {
+                result = Join(result, SafeStr(spell->GetName()));
+                break;
+            }
+    return result;
+}
+
 // Re-reads the player's combat state into g_combatTarget; returns true if it changed.
 // Polled as well as event-driven: no event fires for the player when their target
 // dies or they switch to another enemy.
@@ -525,8 +565,10 @@ void RefreshPosition(const char* trigger = nullptr) {
     Activity    movement    = BuildMovement(player);
     std::string timeWeather = BuildTimeWeather(player);
     int         bounty      = GetTotalBounty();
+    std::string survival    = BuildSurvival(player);
     // Snapshot for the poller: refresh only fires when this composite changes.
-    g_pollSignature = movement.text + '\x1F' + timeWeather + '\x1F' + std::to_string(bounty);
+    g_pollSignature = movement.text + '\x1F' + timeWeather + '\x1F' + std::to_string(bounty)
+                    + '\x1F' + survival;
 
     Activity activity;  // text goes after the location; icon is the small image
     if (g_isDead && g_config.show_death)
@@ -552,6 +594,7 @@ void RefreshPosition(const char* trigger = nullptr) {
     std::string details = g_config.show_player_info ? BuildPlayerInfo(player) : "";
     if (bounty > 0)
         details = Join(details, FormatPlaceholder(Locale("wanted"), "{gold}", std::to_string(bounty)));
+    details = Join(details, survival);
 
     const char* locationIcon = g_config.show_location ? BuildLocationIcon(player) : kIconDefault;
     SKSE::log::info("[{}] player='{}' location='{}' suffix='{}' extra='{}' icons={}/{}{}",
@@ -979,8 +1022,8 @@ DeathSink          g_deathSink;
 SleepStartSink     g_sleepStartSink;
 SleepStopSink      g_sleepStopSink;
 
-// Detects changes in polled state (movement/time/weather/bounty/combat target) that
-// have no reliable engine events. Runs on the game thread every ~2 s.
+// Detects changes in polled state (movement/time/weather/bounty/survival/combat target)
+// that have no reliable engine events. Runs on the game thread every ~2 s.
 static void PollGameState() {
     if (g_state != State::Playing) return;
     auto* player = RE::PlayerCharacter::GetSingleton();
@@ -988,7 +1031,7 @@ static void PollGameState() {
 
     const bool combatChanged = UpdateCombatTarget(player);
     std::string sig = BuildMovement(player).text + '\x1F' + BuildTimeWeather(player)
-                    + '\x1F' + std::to_string(GetTotalBounty());
+                    + '\x1F' + std::to_string(GetTotalBounty()) + '\x1F' + BuildSurvival(player);
     if (combatChanged || sig != g_pollSignature)
         RefreshPosition("poll");  // updates g_pollSignature itself
 }
@@ -1058,6 +1101,7 @@ void LoadConfig() {
         try_bool("show_weather",     g_config.show_weather);
         try_bool("show_bounty",      g_config.show_bounty);
         try_bool("show_death",       g_config.show_death);
+        try_bool("show_survival",    g_config.show_survival);
         try_bool("show_images",      g_config.show_images);
         if (auto it = j.find("icon_url"); it != j.end() && it->is_string() && !it->get<std::string>().empty()) {
             g_config.icon_url = it->get<std::string>();
@@ -1067,12 +1111,12 @@ void LoadConfig() {
         SKSE::log::error("Failed to parse config JSON: {}", e.what());
     }
     SKSE::log::info("Config: location={} quest={} combat={} dialogue={} crafting={} player_info={} "
-        "menus={} movement={} time={} weather={} bounty={} death={} images={} icon_url='{}'",
+        "menus={} movement={} time={} weather={} bounty={} death={} survival={} images={} icon_url='{}'",
         g_config.show_location, g_config.show_quest, g_config.show_combat,
         g_config.show_dialogue, g_config.show_crafting, g_config.show_player_info,
         g_config.show_menus, g_config.show_movement, g_config.show_time,
         g_config.show_weather, g_config.show_bounty, g_config.show_death,
-        g_config.show_images, g_config.icon_url);
+        g_config.show_survival, g_config.show_images, g_config.icon_url);
 }
 
 void SetLocale() {
@@ -1090,6 +1134,7 @@ void SetLocale() {
 
 void RegisterGameEventHandlers() {
     SKSE::log::info("Registering game event handlers...");
+    ResolveSurvivalForms();
     InitDiscord();
     // Plugin loads before Main Menu appears, but the open-event may still
     // race. Start in MainMenu state so Discord shows something right away.

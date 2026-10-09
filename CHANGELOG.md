@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.8.0 — 2026-10-09
+
+**Survival Mode.** With Survival Mode on, the details line shows how badly your character is freezing, starving or worn out — `Very Cold`, `Freezing`, `Numb`, `Hungry`, `Famished`, `Starving`, `Tired`, `Weary`, `Debilitated`, e.g. `Dovahkiin - Nord (15) · Freezing · Starving`. Milder stages (`Chilly`, `Peckish`, …) are not shown. The stage names are taken from the game, so they appear in your game's language without any locale changes. Nothing is shown while Survival Mode is off or not installed. New config option: `show_survival`.
+
 ## 2.7.0 — 2026-10-07
 
 **Location and activity icons.** The big picture now shows where you are: the hold's emblem in its capital (Whiterun's horse, Solitude's wolf, …), the location type everywhere else (cave, Nordic ruin, Dwemer ruin, fort, camp, mine, dragon lair, giant camp, shipwreck, lighthouse and more, 40+ kinds), an inn when you're in one, and its own picture for Sovngarde, Blackreach, the Soul Cairn, Apocrypha, the Forgotten Vale and Solstheim. The emblems and location symbols are the game's own map markers.
