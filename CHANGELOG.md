@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.9.0 — 2026-10-11
+
+**Beast form and dragon riding.** Turning into a werewolf or a Vampire Lord shows `Werewolf` / `Vampire Lord` after the location, with its own icon; in a fight the enemy's name stays, but the icon is the beast's. The details line keeps your character's own race instead of the beast race. Riding a dragon in Dragonborn shows `Flying on <dragon name>` with a dragon rider icon instead of the horse. The new icons are the game's achievement art for Werewolf Mastered, Vampire Mastered and Dragonrider. The Solstheim picture is redrawn from a sharper copy of its trophy, now with the compass rose visible.
+
+New config option: `show_transformation`. New locale keys: `werewolf`, `vampire_lord`, `dragon_riding`, `dragon_riding_no_name`, translated in all 11 languages.
+
 ## 2.8.0 — 2026-10-09
 
 **Survival Mode.** With Survival Mode on, the details line shows how badly your character is freezing, starving or worn out — `Very Cold`, `Freezing`, `Numb`, `Hungry`, `Famished`, `Starving`, `Tired`, `Weary`, `Debilitated`, e.g. `Dovahkiin - Nord (15) · Freezing · Starving`. Milder stages (`Chilly`, `Peckish`, …) are not shown. The stage names are taken from the game, so they appear in your game's language without any locale changes. Nothing is shown while Survival Mode is off or not installed. New config option: `show_survival`.

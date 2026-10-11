@@ -20,6 +20,10 @@
     "swimming": "Плывет",
     "riding": "Верхом: {name}",
     "riding_no_name": "Верхом",
+    "dragon_riding": "Полёт: {name}",
+    "dragon_riding_no_name": "Верхом на драконе",
+    "werewolf": "Вервольф",
+    "vampire_lord": "Лорд-вампир",
     "wanted": "В розыске: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"

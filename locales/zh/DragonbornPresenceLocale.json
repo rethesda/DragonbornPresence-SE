@@ -20,6 +20,10 @@
     "swimming": "游泳中",
     "riding": "正在骑乘 {name}",
     "riding_no_name": "骑马中",
+    "dragon_riding": "正在骑乘巨龙 {name}",
+    "dragon_riding_no_name": "骑龙中",
+    "werewolf": "狼人",
+    "vampire_lord": "吸血鬼领主",
     "wanted": "悬赏: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"

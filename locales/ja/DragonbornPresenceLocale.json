@@ -20,6 +20,10 @@
     "swimming": "遊泳中",
     "riding": "{name}に騎乗中",
     "riding_no_name": "騎乗中",
+    "dragon_riding": "{name}に乗って飛行中",
+    "dragon_riding_no_name": "ドラゴンに騎乗中",
+    "werewolf": "人狼",
+    "vampire_lord": "ヴァンパイア・ロード",
     "wanted": "賞金: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"

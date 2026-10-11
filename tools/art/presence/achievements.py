@@ -18,6 +18,9 @@ CDN = f'https://cdn.akamai.steamstatic.com/steamcommunity/public/images/apps/{AP
 # English achievement name -> glyph name
 WANTED = {
     'Solstheim Explorer': 'SolstheimExplorer',
+    'Werewolf Mastered': 'WerewolfMastered',
+    'Vampire Mastered': 'VampireMastered',
+    'Dragonrider': 'Dragonrider',
 }
 
 
@@ -79,16 +82,27 @@ def path_d(mask, scale):
 
 def trace(img):
     up = max(2, 512 // img.width)
-    big = img.convert('L').resize((img.width * up, img.height * up), Image.LANCZOS) \
+    size = (img.width * up, img.height * up)
+    alpha = img.getchannel('A') if 'A' in img.getbands() else None
+    if alpha:  # transparent trophy rip: the alpha is the silhouette, the art is white on black
+        img = Image.alpha_composite(Image.new('RGBA', img.size, (0, 0, 0, 255)), img.convert('RGBA'))
+    big = img.convert('L').resize(size, Image.LANCZOS) \
              .filter(ImageFilter.GaussianBlur(up * 0.35))
     g = np.array(big).astype(int)
-    white = g > 215
-    # everything non-white reachable from the corners is background (Steam pads with grey, trophies with black)
-    lab, _ = ndimage.label(~white)
-    outside = np.isin(lab, [l for l in {lab[0, 0], lab[0, -1], lab[-1, 0], lab[-1, -1]} if l])
-    silhouette = ndimage.binary_fill_holes(ndimage.binary_opening(~outside, iterations=up // 2))
+    if alpha:
+        # thin lines (sun rays) only reach mid-grey once upscaled — a lower threshold keeps them
+        white = g > 140
+        silhouette = ndimage.binary_fill_holes(np.array(alpha.resize(size, Image.LANCZOS)
+                                                        .filter(ImageFilter.GaussianBlur(up * 0.35))) > 128)
+    else:
+        white = g > 215
+        # everything non-white reachable from the corners is background (Steam pads with grey, trophies with black)
+        lab, _ = ndimage.label(~white)
+        outside = np.isin(lab, [l for l in {lab[0, 0], lab[0, -1], lab[-1, 0], lab[-1, -1]} if l])
+        silhouette = ndimage.binary_fill_holes(ndimage.binary_opening(~outside, iterations=up // 2))
     s = 100 / big.width
-    return {'w': 100, 'h': 100,
+    # plate: the silhouette is the trophy's own dark plate, so the icon page adds no outline
+    return {'w': 100, 'h': 100, 'plate': alpha is not None,
             'svg': f'<path style="fill:var(--bg)" d="{path_d(silhouette, s)}"/>'
                    f'<path style="fill:var(--fg)" d="{path_d(white & silhouette, s)}"/>'}
 

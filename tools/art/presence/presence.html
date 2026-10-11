@@ -49,6 +49,7 @@ const SMALL = {
   crafting: 'Crafting', reading: 'Reading', trading: 'Trading', pickpocketing: 'Pickpocketing',
   lockpicking: 'Lockpicking', training: 'Training', waiting: 'Waiting', sleeping: 'Sleeping', dead: 'Dead',
   sneaking: 'SneakEye', swimming: 'Swimming', riding: 'Stable',
+  dragon_riding: 'Dragonrider', werewolf: 'WerewolfMastered', vampire_lord: 'VampireMastered',
 };
 
 const NS = 'http://www.w3.org/2000/svg';
@@ -63,7 +64,7 @@ function background(s, key, id, outline) {
     <radialGradient id="${id}glow" cx=".5" cy=".46" r=".55"><stop offset="0" stop-color="#5865f2" stop-opacity=".55"/><stop offset="1" stop-color="#5865f2" stop-opacity="0"/></radialGradient>
     <radialGradient id="${id}vig" cx=".5" cy=".5" r=".75"><stop offset=".6" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".55"/></radialGradient>
     <filter id="${id}sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="${s * .012}" stdDeviation="${s * .02}" flood-color="#05061a" flood-opacity=".8"/><feDropShadow dx="0" dy="0" stdDeviation="${s * .03}" flood-color="#8b95ff" flood-opacity=".55"/></filter>
-    <!-- dark outline for drawn glyphs; the game's markers carry their own -->
+    <!-- dark outline for drawn glyphs; the game's markers and plated trophies carry their own -->
     <filter id="${id}ol" x="-10%" y="-10%" width="120%" height="120%"><feMorphology in="SourceAlpha" operator="dilate" radius="${outline}" result="m"/>
       <feFlood flood-color="#1a1e52"/><feComposite in2="m" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs><rect width="${s}" height="${s}" fill="url(#${id}sky)"/>`;
@@ -90,7 +91,7 @@ function icon(key, s) {
   const outline = .047 * gameFrac * s / k;
   return `<svg xmlns="${NS}" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">${background(s, key, id, outline)}
     <g filter="url(#${id}sh)"><!-- filter outside the scale, or the blur radius gets scaled too -->
-      <g class="glyph" style="--fg:#fff;--bg:#1a1e52"${name in GAME_GLYPHS ? '' : ` filter="url(#${id}ol)"`}
+      <g class="glyph" style="--fg:#fff;--bg:#1a1e52"${name in GAME_GLYPHS || g.plate ? '' : ` filter="url(#${id}ol)"`}
          transform="translate(${s / 2} ${s / 2 - s * .02}) scale(${k}) translate(${-g.w / 2} ${-g.h / 2})">${g.svg}</g></g></svg>`;
 }
 

@@ -20,6 +20,10 @@
     "swimming": "Schwimmt",
     "riding": "Reitet auf {name}",
     "riding_no_name": "Zu Pferd",
+    "dragon_riding": "Fliegt auf {name}",
+    "dragon_riding_no_name": "Auf einem Drachen",
+    "werewolf": "Werwolf",
+    "vampire_lord": "Vampirfürst",
     "wanted": "Gesucht: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"

@@ -30,6 +30,8 @@ links them by raw GitHub URL, so a key is a public path: **never rename or delet
   (`python extract.py "<Skyrim SE>\Data" [ffdec.jar] [java]`; needs `lz4` and JPEXS FFDec).
 - `achievements.js` — Steam achievement icons traced to vectors by `achievements.py "<Steam>"`
   (needs `pillow numpy scipy potracer`). Only icon art, achievements themselves are not shown.
+  A sharper `ref/<glyph>.png|jpg` (240×240 console trophy) is used instead of the Steam icon; for a
+  transparent PNG the alpha is the silhouette (`plate`), and like the game's markers it gets no extra outline.
 - `drawn.js` — hand-drawn glyphs for what the game has no icon for: activities, Sovngarde,
   Blackreach, Soul Cairn, Apocrypha, inn.
 - `render.sh [key...]` — renders all (or the given) keys with headless Edge into `assets/icons/`,

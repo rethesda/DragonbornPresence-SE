@@ -20,6 +20,10 @@
     "swimming": "수영 중",
     "riding": "{name} 타는 중",
     "riding_no_name": "말 타는 중",
+    "dragon_riding": "{name} 타고 비행 중",
+    "dragon_riding_no_name": "드래곤 타는 중",
+    "werewolf": "늑대인간",
+    "vampire_lord": "뱀파이어 군주",
     "wanted": "현상금: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"

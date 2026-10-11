@@ -59,6 +59,10 @@ std::unordered_map<std::string, std::string> g_locale = {
     {"swimming",            "Swimming"},
     {"riding",              "Riding {name}"},
     {"riding_no_name",      "On horseback"},
+    {"dragon_riding",       "Flying on {name}"},
+    {"dragon_riding_no_name", "Riding a dragon"},
+    {"werewolf",            "Werewolf"},
+    {"vampire_lord",        "Vampire Lord"},
     {"wanted",              "Wanted: {gold}"},
     {"weather_rain",        "\xF0\x9F\x8C\xA7"},   // 🌧
     {"weather_snow",        "\xE2\x9D\x84"},       // ❄
@@ -89,6 +93,7 @@ struct Config {
     bool show_bounty      = true;   // total crime gold
     bool show_death       = true;
     bool show_survival    = true;   // Survival Mode cold/hunger/exhaustion stages
+    bool show_transformation = true;  // werewolf / Vampire Lord
     bool show_images      = true;   // location / activity icons
     std::string icon_url  = kIconBaseUrl;  // folder with <key>.png, for custom icon sets
 } g_config;
@@ -326,6 +331,7 @@ static const char* BuildLocationIcon(RE::PlayerCharacter* player) {
 static std::string IconUrl(const char* key) {
     if (!g_config.show_images || !key) return "";
     std::string url = g_config.icon_url + key + ".png";
+    if (std::string_view(key) == "solstheim") url += "?v=2";  // 2.9.0: redrawn from the transparent trophy
     return url.size() <= kMaxFieldBytes ? url : "";  // a cut URL would just show a broken image
 }
 
@@ -349,8 +355,23 @@ static std::string BuildActiveQuest(RE::PlayerCharacter* player) {
     return best ? SafeStr(best->GetFullName()) : "";
 }
 
+// Beast forms swap the player's race for the duration of the transformation.
+RE::TESRace* g_werewolfRace    = nullptr;  // Skyrim.esm WerewolfBeastRace
+RE::TESRace* g_vampireLordRace = nullptr;  // Dawnguard.esm DLC1VampireBeastRace
+
+static void ResolveBeastRaces() {
+    auto* dh = RE::TESDataHandler::GetSingleton();
+    if (!dh) return;
+    g_werewolfRace = dh->LookupForm<RE::TESRace>(0xCDD84, "Skyrim.esm");
+    if (dh->LookupModByName("Dawnguard.esm"))
+        g_vampireLordRace = dh->LookupForm<RE::TESRace>(0x283A, "Dawnguard.esm");
+}
+
 static std::string BuildPlayerInfo(RE::PlayerCharacter* player) {
     auto* race = player->GetRace();
+    // In beast form keep the character's own race; the form itself is shown as the activity.
+    if (race && (race == g_werewolfRace || race == g_vampireLordRace))
+        if (auto* own = player->GetRaceData().charGenRace) race = own;
     // GetName() on the actor returns the display name (updated after char edit);
     // GetActorBase()->GetName() can lag behind by several frames.
     std::string name     = SafeStr(player->GetName());
@@ -373,10 +394,24 @@ static Activity BuildMovement(RE::PlayerCharacter* player) {
     if (player->IsOnMount()) {
         RE::NiPointer<RE::Actor> mount;
         std::string name;
-        if (player->GetMount(mount) && mount)
-            name = SafeStr(mount->GetName());
+        bool dragon = false;
+        if (player->GetMount(mount) && mount) {
+            name   = SafeStr(mount->GetName());
+            dragon = mount->HasKeywordString("ActorTypeDragon");  // Dragonborn: Bend Will on a dragon
+        }
+        if (dragon)
+            return {name.empty() ? Locale("dragon_riding_no_name") : FormatWithName(Locale("dragon_riding"), name),
+                    "dragon_riding"};
         return {name.empty() ? Locale("riding_no_name") : FormatWithName(Locale("riding"), name), "riding"};
     }
+    return {};
+}
+
+static Activity BuildTransformation(RE::PlayerCharacter* player) {
+    if (!g_config.show_transformation) return {};
+    auto* race = player->GetRace();
+    if (race && race == g_werewolfRace)    return {Locale("werewolf"), "werewolf"};
+    if (race && race == g_vampireLordRace) return {Locale("vampire_lord"), "vampire_lord"};
     return {};
 }
 
@@ -562,12 +597,13 @@ void RefreshPosition(const char* trigger = nullptr) {
     const bool fallback = g_config.show_location && position.empty() && !g_lastPosition.empty();
     const std::string& display = fallback ? g_lastPosition : position;
 
+    Activity    beast       = BuildTransformation(player);
     Activity    movement    = BuildMovement(player);
     std::string timeWeather = BuildTimeWeather(player);
     int         bounty      = GetTotalBounty();
     std::string survival    = BuildSurvival(player);
     // Snapshot for the poller: refresh only fires when this composite changes.
-    g_pollSignature = movement.text + '\x1F' + timeWeather + '\x1F' + std::to_string(bounty)
+    g_pollSignature = beast.text + '\x1F' + movement.text + '\x1F' + timeWeather + '\x1F' + std::to_string(bounty)
                     + '\x1F' + survival;
 
     Activity activity;  // text goes after the location; icon is the small image
@@ -576,11 +612,13 @@ void RefreshPosition(const char* trigger = nullptr) {
     else if (!g_dialogueSpeaker.empty() && g_config.show_dialogue)
         activity = {g_dialogueSpeaker, "dialogue"};
     else if (!g_combatTarget.empty() && g_config.show_combat)
-        activity = {g_combatTarget, "combat"};
+        activity = {g_combatTarget, beast.icon ? beast.icon : "combat"};  // fighting in beast form
     else if (!g_craftingActivity.empty() && g_config.show_crafting)
         activity = {g_craftingActivity, g_craftingIcon};
     else if (!g_menuActivity.empty() && g_config.show_menus)
         activity = {g_menuActivity, g_menuIcon};
+    else if (!beast.text.empty())
+        activity = std::move(beast);
     else if (!movement.text.empty())
         activity = std::move(movement);
     else if (g_config.show_quest)
@@ -1030,7 +1068,8 @@ static void PollGameState() {
     if (!player) return;
 
     const bool combatChanged = UpdateCombatTarget(player);
-    std::string sig = BuildMovement(player).text + '\x1F' + BuildTimeWeather(player)
+    std::string sig = BuildTransformation(player).text + '\x1F' + BuildMovement(player).text
+                    + '\x1F' + BuildTimeWeather(player)
                     + '\x1F' + std::to_string(GetTotalBounty()) + '\x1F' + BuildSurvival(player);
     if (combatChanged || sig != g_pollSignature)
         RefreshPosition("poll");  // updates g_pollSignature itself
@@ -1102,6 +1141,7 @@ void LoadConfig() {
         try_bool("show_bounty",      g_config.show_bounty);
         try_bool("show_death",       g_config.show_death);
         try_bool("show_survival",    g_config.show_survival);
+        try_bool("show_transformation", g_config.show_transformation);
         try_bool("show_images",      g_config.show_images);
         if (auto it = j.find("icon_url"); it != j.end() && it->is_string() && !it->get<std::string>().empty()) {
             g_config.icon_url = it->get<std::string>();
@@ -1111,12 +1151,12 @@ void LoadConfig() {
         SKSE::log::error("Failed to parse config JSON: {}", e.what());
     }
     SKSE::log::info("Config: location={} quest={} combat={} dialogue={} crafting={} player_info={} "
-        "menus={} movement={} time={} weather={} bounty={} death={} survival={} images={} icon_url='{}'",
+        "menus={} movement={} time={} weather={} bounty={} death={} survival={} transformation={} images={} icon_url='{}'",
         g_config.show_location, g_config.show_quest, g_config.show_combat,
         g_config.show_dialogue, g_config.show_crafting, g_config.show_player_info,
         g_config.show_menus, g_config.show_movement, g_config.show_time,
         g_config.show_weather, g_config.show_bounty, g_config.show_death,
-        g_config.show_survival, g_config.show_images, g_config.icon_url);
+        g_config.show_survival, g_config.show_transformation, g_config.show_images, g_config.icon_url);
 }
 
 void SetLocale() {
@@ -1135,6 +1175,7 @@ void SetLocale() {
 void RegisterGameEventHandlers() {
     SKSE::log::info("Registering game event handlers...");
     ResolveSurvivalForms();
+    ResolveBeastRaces();
     InitDiscord();
     // Plugin loads before Main Menu appears, but the open-event may still
     // race. Start in MainMenu state so Discord shows something right away.

@@ -3,7 +3,7 @@
 [font=Tahoma][size=5][b]DRAGONBORN PRESENCE[/b][/size]
 [size=3]DISCORD RICH PRESENCE SKSE PLUGIN[/size][/font][/center]
 
-[font=Tahoma]Show your friends what you're up to in Skyrim — right in Discord. Dragonborn Presence displays your current location, in-game time and weather, character name, race, level, active quest, and whatever you're doing right now — fighting, talking, trading, crafting, reading, sneaking, riding, sleeping, even getting a bounty on your head — as Discord Rich Presence, updating in real time as you explore the world.[/font]
+[font=Tahoma]Show your friends what you're up to in Skyrim — right in Discord. Dragonborn Presence displays your current location, in-game time and weather, character name, race, level, active quest, and whatever you're doing right now — fighting, talking, trading, crafting, reading, sneaking, riding a horse or a dragon, prowling as a werewolf, sleeping, even getting a bounty on your head — as Discord Rich Presence, updating in real time as you explore the world.[/font]
 
 [font=Tahoma][url=https://www.nexusmods.com/skyrim/mods/97371]Legendary Edition version[/url]   [url=https://github.com/Fozar/DragonbornPresence-SE]Source Code[/url][/font]
 
@@ -18,11 +18,12 @@
 [*][b]Crafting[/b] — while at a crafting station, shows the activity: [i]Smithing[/i] (forge, grindstone, workbench), [i]Brewing[/i] (alchemy lab), [i]Enchanting[/i] (enchanting table), or [i]Crafting[/i] (smelter, tanning rack, cooking pot, Hearthfire stations, etc.). Reverts to the active quest when the menu closes.
 [*][b]In-game time & weather[/b] — the game clock is shown after the location, e.g. [i]Skyrim: Whiterun · 14:30 🌧[/i], with a rain or snow marker while outside.
 [*][b]Activities[/b] — [i]Reading <book title>[/i], [i]Trading with <merchant>[/i], [i]Pickpocketing <victim>[/i], [i]Picking a lock[/i], [i]Training[/i], [i]Sleeping[/i], [i]Waiting[/i].
-[*][b]Movement[/b] — [i]Sneaking[/i], [i]Swimming[/i], or [i]Riding <horse name>[/i] when nothing more important is happening.
+[*][b]Movement[/b] — [i]Sneaking[/i], [i]Swimming[/i], [i]Riding <horse name>[/i] or [i]Flying on <dragon name>[/i] when nothing more important is happening.
+[*][b]Transformation[/b] — [i]Werewolf[/i] or [i]Vampire Lord[/i] while in beast form, with its own icon even in the middle of a fight.
 [*][b]Bounty[/b] — if any hold wants your head, the details line shows [i]Wanted: <gold>[/i].
 [*][b]Death[/b] — dying shows [i]Dead[/i] until you reload. Sovngarde awaits.
 [*][b]Survival Mode[/b] — when it is on, the details line shows how badly you are freezing, starving or worn out: [i]Very Cold[/i], [i]Freezing[/i], [i]Numb[/i], [i]Hungry[/i], [i]Starving[/i], [i]Tired[/i], [i]Debilitated[/i]… The names come from the game itself, in your language.
-[*][b]Icons[/b] — the big picture shows where you are: the hold's emblem in its capital, the location type everywhere else (cave, Nordic ruin, Dwemer ruin, fort, camp, mine, dragon lair…), an inn, or Sovngarde, Blackreach, the Soul Cairn, Apocrypha, Solstheim. The emblems and location symbols are the game's own map markers. A small icon shows what you're doing — fighting, talking, smithing, reading, sneaking, riding and more.
+[*][b]Icons[/b] — the big picture shows where you are: the hold's emblem in its capital, the location type everywhere else (cave, Nordic ruin, Dwemer ruin, fort, camp, mine, dragon lair…), an inn, or Sovngarde, Blackreach, the Soul Cairn, Apocrypha, Solstheim. The emblems and location symbols are the game's own map markers. A small icon shows what you're doing — fighting, talking, smithing, reading, sneaking, riding, beast form and more.
 [*][b]Session timer[/b] — shows how long you've been playing this session.
 [*][b]Menu states[/b] — displays [i]Main menu[/i] while on the title screen and [i]Editing character[/i] during character creation.
 [*][b]Configurable[/b] — every element can be toggled on or off independently in a JSON file.
@@ -76,6 +77,7 @@ No .esp. No plugins to enable. Just drop and play.
     "show_bounty": true,
     "show_death": true,
     "show_survival": true,
+    "show_transformation": true,
     "show_images": true
 }[/font]
 

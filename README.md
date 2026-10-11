@@ -2,7 +2,7 @@
 
 An SKSE plugin for **Skyrim Special Edition** that displays your current in-game state as Discord Rich Presence.
 
-While you play, Discord shows your character's name, race, level, current location, in-game time and weather, active quest, and what you're doing right now — fighting, talking, trading, crafting, reading, sneaking, riding, sleeping — and updates automatically as you move through the world.
+While you play, Discord shows your character's name, race, level, current location, in-game time and weather, active quest, and what you're doing right now — fighting, talking, trading, crafting, reading, sneaking, riding a horse or a dragon, running around as a werewolf, sleeping — and updates automatically as you move through the world.
 
 ---
 
@@ -17,7 +17,8 @@ While you play, Discord shows your character's name, race, level, current locati
 - NPC dialogue — shows `Talking to <NPC name>` while in conversation
 - Crafting — shows `Smithing`, `Brewing`, or `Enchanting` while at a crafting station
 - Activities — `Reading <book>`, `Trading with <merchant>`, `Pickpocketing <victim>`, `Picking a lock`, `Training`, `Sleeping`, `Waiting`
-- Movement — `Sneaking`, `Swimming`, or `Riding <horse name>` when nothing more important is happening
+- Movement — `Sneaking`, `Swimming`, `Riding <horse name>` or `Flying on <dragon name>` when nothing more important is happening
+- Transformation — `Werewolf` or `Vampire Lord` while in beast form, with its own icon (also during combat)
 - Bounty — `Wanted: <gold>` in the details line while any hold has a bounty on you
 - Death — shows `Dead` when you die
 - Survival Mode — `Freezing`, `Starving`, `Weary` and the other severe stages of cold, hunger and fatigue in the details line, in your game's language
@@ -66,6 +67,7 @@ Edit `Data\SKSE\Plugins\DragonbornPresenceConfig.json` to control what appears i
     "show_bounty": true,
     "show_death": true,
     "show_survival": true,
+    "show_transformation": true,
     "show_images": true
 }
 ```
@@ -77,12 +79,13 @@ Edit `Data\SKSE\Plugins\DragonbornPresenceConfig.json` to control what appears i
 - `show_crafting` — activity shown while at a crafting station (`Smithing`, `Brewing`, or `Enchanting`), replacing the quest suffix
 - `show_player_info` — character name, race, and level shown in the details line
 - `show_menus` — activity shown while reading a book, trading, pickpocketing, lockpicking, training, sleeping, or waiting
-- `show_movement` — `Sneaking` / `Swimming` / `Riding <horse>` when no higher-priority activity is shown
+- `show_movement` — `Sneaking` / `Swimming` / `Riding <horse>` / `Flying on <dragon>` when no higher-priority activity is shown
 - `show_time` — in-game clock after the location
 - `show_weather` — rain/snow marker next to the clock (exteriors only)
 - `show_bounty` — `Wanted: <gold>` in the details line when your total bounty is above zero
 - `show_death` — `Dead` when your character dies
 - `show_survival` — Survival Mode stages in the details line: cold (`Very Cold` and worse), hunger (`Hungry` and worse), fatigue (`Tired` and worse); nothing while Survival Mode is off
+- `show_transformation` — `Werewolf` / `Vampire Lord` while in beast form
 - `show_images` — location/activity icons; off shows the plain Skyrim logo
 - `icon_url` (optional string) — base URL of a custom icon set: a folder with `<key>.png` files under the names used in [`assets/icons`](assets/icons)
 
@@ -135,6 +138,10 @@ You can also edit `Data\SKSE\Plugins\DragonbornPresenceLocale.json` directly at 
     "swimming": "Swimming",
     "riding": "Riding {name}",
     "riding_no_name": "On horseback",
+    "dragon_riding": "Flying on {name}",
+    "dragon_riding_no_name": "Riding a dragon",
+    "werewolf": "Werewolf",
+    "vampire_lord": "Vampire Lord",
     "wanted": "Wanted: {gold}",
     "weather_rain": "🌧",
     "weather_snow": "❄"
@@ -153,6 +160,8 @@ All `{name}` keys replace the placeholder at runtime; position is flexible so SO
 - `lockpicking`, `training`, `waiting`, `sleeping`, `dead` — plain labels.
 - `sneaking` / `swimming` — plain labels shown while sneaking or swimming.
 - `riding` — `{name}` is the mount's name; `riding_no_name` is used when the mount has no name.
+- `dragon_riding` / `dragon_riding_no_name` — the same for a dragon (Dragonborn).
+- `werewolf` / `vampire_lord` — plain labels shown in beast form.
 - `wanted` — `{gold}` is replaced with your total bounty across all holds.
 - `weather_rain` / `weather_snow` — shown next to the in-game clock; default to the 🌧 / ❄ emoji, replace with text if you prefer.
 
@@ -204,7 +213,7 @@ Pure C++ DLL — no `.esp`, no Papyrus scripts.
 - **`CombatSink`** — listens to `TESCombatEvent` filtered to the player. On `kCombat` stores `"In combat with <target name>"` in `g_combatTarget` and triggers a refresh; on `kNone` clears it.
 - **`DeathSink`** — listens to `TESDeathEvent`; shows `Dead` when the player dies, cleared on load.
 - **`SleepStartSink`** / **`SleepStopSink`** — listen to `TESSleepStartEvent` / `TESSleepStopEvent` for the `Sleeping` label.
-- **`PollGameState()`** — game-thread task run every ~2 s by the callback thread; detects changes in sneaking/swimming/riding, in-game time, weather, and bounty (none of which have engine events) and refreshes only when the composite state changes.
+- **`PollGameState()`** — game-thread task run every ~2 s by the callback thread; detects changes in transformation, sneaking/swimming/riding, in-game time, weather, and bounty (none of which have engine events) and refreshes only when the composite state changes.
 - **`BuildPosition()`** — traverses the `parentLoc` chain to find the first named ancestor. Returns `"Worldspace: Location"` for exterior, `"Location"` for interior, cell name as last resort. Caches the last non-empty result to handle null pointers during location boundary crossing.
 - **`BuildActiveQuest()`** — scans displayed quest objectives and returns the name of the highest-priority active quest.
 - **`BuildPlayerInfo()`** — returns `"Name - Race (Level)"`; the details line also carries the bounty when above zero.

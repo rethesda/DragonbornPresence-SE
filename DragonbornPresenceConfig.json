@@ -12,5 +12,6 @@
     "show_bounty": true,
     "show_death": true,
     "show_survival": true,
+    "show_transformation": true,
     "show_images": true
 }
